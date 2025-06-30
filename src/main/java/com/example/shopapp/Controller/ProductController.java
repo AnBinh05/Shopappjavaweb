@@ -22,7 +22,7 @@ public class ProductController {
     }
     @GetMapping("/{id}")
     public String getProductById (@PathVariable("id") String productId){
-        return "Get product by id" + productId;
+        return "Get product by id" + " "+ productId;
     }
     @PostMapping()
     public ResponseEntity<?> createProduct (@Valid @RequestBody ProductDTO productDTO,
@@ -38,7 +38,7 @@ public class ProductController {
 
 
 
-            return ResponseEntity.ok("Add category " + productDTO);
+            return ResponseEntity.ok("Add category successfully");
         } catch (Exception e) {
             e.printStackTrace(); // Log chi tiết lỗi ra console
             return ResponseEntity
@@ -48,7 +48,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteProductById (@PathVariable long id){
-        return "Delete product succesfully";
+    public ResponseEntity<String> deleteProductById (@PathVariable long id){
+        return ResponseEntity.ok(String.format("Product with id = %d deleted successfully",id));
     }
 }
