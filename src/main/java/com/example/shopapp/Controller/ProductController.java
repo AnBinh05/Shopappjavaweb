@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,7 +38,7 @@ public class ProductController {
     }
     @PostMapping(value = "",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createProduct (@Valid  @ModelAttribute ProductDTO productDTO,
-                                           @RequestPart("file") MultipartFile file,
+                                          // @RequestPart("file") MultipartFile file,
                                             BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -47,27 +48,37 @@ public class ProductController {
                         .toList();
                 return ResponseEntity.badRequest().body(errorMessages);
             }
-            if (file != null){
-                // Kiểm tra kích thước file và định dạng
-                if(file.getSize() > 10 * 1024 * 1024) { // Kích thước > 10MB
-                    return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                            .body(" File is too large (>10MB)");
+            List<MultipartFile> files =    productDTO.getFiles();
+            files =files == null ? new ArrayList<>() : files;
+            for (MultipartFile file : files) {
+                if (file.getSize() == 0){
+                    continue;
+                }
+
+                    // Kiểm tra kích thước file và định dạng
+                    if(file.getSize() > 10 * 1024 * 1024) { // Kích thước > 10MB
+                        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                                .body(" File is too large (>10MB)");
 
 
-                }
-                // sau khi kiểm tra kích thước xong thì kiểm tra định dạng
-                String contentType = file.getContentType();
-                if(contentType == null || !contentType.startsWith("image/")) {
-                    return ResponseEntity.badRequest().body(" File is not an image");
-                }
-                // Lưu file và cập nhật thumbnail trong DTO
-                String filename = storeFile(file); // Thay thế hàm này với code của bạn để lưu file
-               // lưu từng đối tượng product  vào trong DB
+                    }
+                    // sau khi kiểm tra kích thước xong thì kiểm tra định dạng
+                    String contentType = file.getContentType();
+                    if(contentType == null || !contentType.startsWith("image/")) {
+                        return ResponseEntity.badRequest().body(" File is not an image");
+                    }
+                    // Lưu file và cập nhật thumbnail trong DTO
+                    String filename = storeFile(file); // Thay thế hàm này với code của bạn để lưu file
+                    // lưu từng đối tượng product  vào trong DB
+                // lưu vào bảng product_image
+
+
 
 
 
 
             }
+
 //            {
 //                "name": "Sample Product",
 //                    "price": 50,
