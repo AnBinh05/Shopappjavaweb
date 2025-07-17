@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 //@Validated
-@RequestMapping("api/v1/categories")
+@RequestMapping("${api.prefix}categories")
 public class CategoriesController {
     @GetMapping("")
     public ResponseEntity<String> getAllCategories(
