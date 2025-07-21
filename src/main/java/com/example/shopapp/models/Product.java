@@ -1,8 +1,17 @@
 package com.example.shopapp.models;
 
 import jakarta.persistence.*;
+import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime;@Entity
+@Table(name = "products")
+@Data//toString
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+
 
 public class Product  extends BaseEntity{
     @Id
