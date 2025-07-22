@@ -27,7 +27,6 @@ public class Token {
 
     @Column(name = "expiration_date")
     private LocalDateTime expirationDate;
-
     private boolean revoked;
     private boolean expired;
 
