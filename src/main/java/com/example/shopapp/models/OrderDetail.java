@@ -1,6 +1,15 @@
 package com.example.shopapp.models;
 
 import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "order_details")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 
 public class OrderDetail {
     @Id

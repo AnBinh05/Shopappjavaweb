@@ -2,8 +2,9 @@ package com.example.shopapp.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+@Entity
 
-@Table(name = "products")
+@Table(name = "product_images")
 @Data//toString
 @Getter
 @Setter
