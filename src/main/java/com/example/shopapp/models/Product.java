@@ -1,5 +1,6 @@
 package com.example.shopapp.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
