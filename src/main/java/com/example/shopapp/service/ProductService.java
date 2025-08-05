@@ -26,6 +26,7 @@ public class ProductService  implements IProductService{
     private final ProductImageRepository productImageRepository;
     @Override
     public Product createProduct(ProductDTO productDTO) throws DataNotFoundException {
+        //System.out.println("DEBUG >>> categoryId = " + productDTO.getCategoryId());
          Category existingCategory= categoryRepository.findById(productDTO.getCategoryId())
                 .orElseThrow(()->
                         new DataNotFoundException("cannot find category with id :"+productDTO.getCategoryId()));

@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -41,11 +42,13 @@ public class ProductController {
     }
     @GetMapping("/{id}")
     public String getProductById (@PathVariable("id") String productId){
+
         return "Get product by id" + " "+ productId;
     }
-    @PostMapping(value = "",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createProduct (@Valid  @ModelAttribute ProductDTO productDTO,
+    @PostMapping("")
+    public ResponseEntity<?> createProduct (@Valid  @RequestBody ProductDTO productDTO,
                                           // @RequestPart("file") MultipartFile file,
+
                                             BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -56,42 +59,6 @@ public class ProductController {
                 return ResponseEntity.badRequest().body(errorMessages);
             }
              Product newProduct = productService.createProduct(productDTO);
-            List<MultipartFile> files =    productDTO.getFiles();
-            files =files == null ? new ArrayList<>() : files;
-            for (MultipartFile file : files) {
-                if (file.getSize() == 0){
-                    continue;
-                }
-
-                    // Kiểm tra kích thước file và định dạng
-                    if(file.getSize() > 10 * 1024 * 1024) { // Kích thước > 10MB
-                        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                                .body(" File is too large (>10MB)");
-
-
-                    }
-                    // sau khi kiểm tra kích thước xong thì kiểm tra định dạng
-                    String contentType = file.getContentType();
-                    if(contentType == null || !contentType.startsWith("image/")) {
-                        return ResponseEntity.badRequest().body(" File is not an image");
-                    }
-                    // Lưu file và cập nhật thumbnail trong DTO
-                    String filename = storeFile(file); // Thay thế hàm này với code của bạn để lưu file
-                    // lưu từng đối tượng product  vào trong DB
-                ProductImage productImage= productService.createProductImage(newProduct
-                        .getId(), ProductImageDTO.builder()
-
-                                .imageUrl(filename)
-                        .build());
-
-                // lưu vào bảng product_image
-
-
-
-
-
-
-            }
 
 //            {
 //                "name": "Sample Product",
@@ -107,7 +74,7 @@ public class ProductController {
 
 
 
-            return ResponseEntity.ok("Add category successfully");
+            return ResponseEntity.ok(newProduct);
         } catch (Exception e) {
             e.printStackTrace(); // Log chi tiết lỗi ra console
             return ResponseEntity
@@ -115,8 +82,66 @@ public class ProductController {
                     .body("Internal Server Error: " + e.getMessage());
         }
     }
+    @PostMapping(value = "uploads/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateImage ( @ModelAttribute("files") List<MultipartFile> files
+                                          , @PathVariable("id") Long productId){
+        try {
+            Product existingProduct =  productService.getProductById(productId);
+            files =files == null ? new ArrayList<>() : files;
+            if(files.size()> ProductImage.MAXIMUM_IMAGES_PER_PRODUCT){
+                return ResponseEntity.badRequest().body(" you cannot upload more than 5 images");
+            }
+            List<ProductImage> productImages = new ArrayList<>();
+            for (MultipartFile file : files) {
+                if (file.getSize() == 0){
+                    continue;
+                }
+
+                // Kiểm tra kích thước file và định dạng
+                if(file.getSize() > 10 * 1024 * 1024) { // Kích thước > 10MB
+                    return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                            .body(" File is too large (>10MB)");
+
+
+                }
+                // sau khi kiểm tra kích thước xong thì kiểm tra định dạng
+                String contentType = file.getContentType();
+                if(contentType == null || !contentType.startsWith("image/")) {
+                    return ResponseEntity.badRequest().body(" File is not an image");
+                }
+                // Lưu file và cập nhật thumbnail trong DTO
+                String filename = storeFile(file); // Thay thế hàm này với code của bạn để lưu file
+                // lưu từng đối tượng product  vào trong DB
+                ProductImage productImage= productService.createProductImage(existingProduct
+                        .getId(), ProductImageDTO.builder()
+
+                        .imageUrl(filename)
+                        .build());
+                productImages.add(productImage);
+
+                // lưu vào bảng product_image
+
+
+
+
+
+
+            }
+            return ResponseEntity.ok().body(productImages);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+
+
+    }
     private String storeFile (MultipartFile file) throws IOException {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        if (!isImageFile(file) || file.getOriginalFilename() == null) {
+            throw new IOException("Invalid image format");
+        }
+
+            String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         // Thêm UUID vào trước tên file  để đảm bảo tên file là duy nhất
         String uniqueFilename = UUID.randomUUID().toString() + "." + file.getOriginalFilename();
     // đường dẫn đến thư mục mà bạn muốn lưu file
@@ -133,8 +158,11 @@ public class ProductController {
 
     }
 
+    private boolean isImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType != null && contentType.startsWith("image/");
 
-
+    }
 
 
     @DeleteMapping("/{id}")
