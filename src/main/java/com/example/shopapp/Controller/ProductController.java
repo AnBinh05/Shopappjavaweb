@@ -5,10 +5,13 @@ import com.example.shopapp.dto.ProductDTO;
 import com.example.shopapp.dto.ProductImageDTO;
 import com.example.shopapp.models.Product;
 import com.example.shopapp.models.ProductImage;
+import com.example.shopapp.responses.ProductListResponse;
+import com.example.shopapp.responses.ProductResponse;
 import com.example.shopapp.service.IProductService;
 import jakarta.validation.Path;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 
 @RestController
 @RequestMapping("${api.prefix}products")
@@ -33,12 +39,30 @@ import java.util.UUID;
 public class ProductController {
     private final IProductService productService;
     @GetMapping("")
-    public ResponseEntity<String> getProducts(
+    public ResponseEntity<ProductListResponse> getProducts(
             @RequestParam("page") int page,
             @RequestParam("limit") int limit
 
     ) {
-        return ResponseEntity.ok("Get products here");
+        // Tạo Pageable từ thông tin trang và giới hạn
+           PageRequest pageRequest = PageRequest.of(page, limit
+                   , Sort.by("createdAt").descending());
+        Page<ProductResponse> productPage = productService.getAllProducts(pageRequest);
+        // Lấy tổng số trang
+        int totalPages = productPage.getTotalPages();
+        List<ProductResponse> products = productPage.getContent();
+        return ResponseEntity.ok(ProductListResponse
+                .builder()
+                .products(products)
+                .totalPages(totalPages)
+                .build());
+
+
+
+
+
+
+
     }
     @GetMapping("/{id}")
     public String getProductById (@PathVariable("id") String productId){

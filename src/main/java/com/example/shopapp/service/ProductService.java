@@ -10,6 +10,7 @@ import com.example.shopapp.exceptions.InvalidParamException;
 import com.example.shopapp.models.Category;
 import com.example.shopapp.models.Product;
 import com.example.shopapp.models.ProductImage;
+import com.example.shopapp.responses.ProductResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,11 +51,34 @@ public class ProductService  implements IProductService{
     }
 
     @Override
-    public Page<Product> getAllProducts(PageRequest pageRequest) {
+    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
         // Lấy danh sách sản phẩm theo trang(page) và giới hạn(limit)
-        productRepository.findAll(pageRequest);
+        // Lấy danh sách sản phẩm theo trang (page) và giới hạn (limit)
 
-        return null;
+//Biến đổi (transform) từng Product lấy từ DB thành một ProductResponse.
+
+//Đây là cách chuyển từ Entity sang DTO.
+        return productRepository.findAll(pageRequest)
+
+                .map(product -> {
+                    ProductResponse productResponse = ProductResponse.builder()
+                            .name(product.getName())
+                            .price(product.getPrice())
+                            .thumbnail(product.getThumbnail())
+                            .description(product.getDescription())
+                            .categoryId(product.getCategory().getId())
+                            .build();
+
+                    productResponse.setCreatedAt(product.getCreatedAt());
+
+                    productResponse.setUpdatedAt(product.getUpdatedAt());
+
+                    return productResponse;
+                });
+
+
+
+
     }
 
     @Override
