@@ -8,6 +8,7 @@ import com.example.shopapp.models.ProductImage;
 import com.example.shopapp.responses.ProductListResponse;
 import com.example.shopapp.responses.ProductResponse;
 import com.example.shopapp.service.IProductService;
+import com.github.javafaker.Faker;
 import jakarta.validation.Path;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -187,6 +188,32 @@ public class ProductController {
         return contentType != null && contentType.startsWith("image/");
 
     }
+
+ // fake dữ liệu đầu vào
+   // @PostMapping("/generateFakeProducts")
+    private ResponseEntity<String> generateFakeProducts() {
+        Faker faker = new Faker();
+        for (int i = 0; i < 1_000_000; i++) {
+            String productName = faker.commerce().productName();
+            if(productService.existsByName(productName)) {
+                continue;
+            }
+            ProductDTO productDTO = ProductDTO.builder()
+                    .name(productName)
+                    .price((float)faker.number().numberBetween(10, 90_000_000))
+                    .description(faker.lorem().sentence())
+                    .thumbnail("")
+                    .categoryId((long)faker.number().numberBetween(2, 5))
+                    .build();
+            try {
+                productService.createProduct(productDTO);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+        return ResponseEntity.ok("Fake Products created successfully");
+    }
+
 
 
     @DeleteMapping("/{id}")
