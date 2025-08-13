@@ -66,9 +66,16 @@ public class ProductController {
 
     }
     @GetMapping("/{id}")
-    public String getProductById (@PathVariable("id") String productId){
+    public ResponseEntity<?> getProductById (@PathVariable("id") Long productId){
+        try {
+            Product existingProduct = productService.getProductById(productId);
+            return ResponseEntity.ok(ProductResponse.fromProduct(existingProduct));
 
-        return "Get product by id" + " "+ productId;
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+
     }
     @PostMapping("")
     public ResponseEntity<?> createProduct (@Valid  @RequestBody ProductDTO productDTO,
@@ -218,6 +225,25 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProductById (@PathVariable long id){
-        return ResponseEntity.ok(String.format("Product with id = %d deleted successfully",id));
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok(String.format("Product with id = %d deleted successfully", id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProduct(
+            @PathVariable long id,
+            @RequestBody ProductDTO productDTO) {
+        try {
+            Product updatedProduct = productService.updateProduct(id, productDTO);
+            return ResponseEntity.ok(updatedProduct);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+
 }
+
