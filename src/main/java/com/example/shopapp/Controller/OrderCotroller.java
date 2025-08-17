@@ -34,12 +34,28 @@ public class OrderCotroller {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @GetMapping("/{user_id}") // Thêm biến đường dẫn "user_id"
+    @GetMapping("/user/{user_id}") // Thêm biến đường dẫn "user_id"
     //GET http://localhost:8088/api/v1/orders/user/4
-    // lấy ra order cúa người có userid = ?
+    // lấy ra  tất cả order cúa người có userid = ?
     public ResponseEntity<?> getOrders( @Valid @PathVariable("user_id") long userid){
         try {
-            return ResponseEntity.ok("lấy ra danh sách oder từ user_id: " + userid);
+            List<Order> orders= orderService.findByUserId(userid);
+            return ResponseEntity.ok(orders);
+
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @GetMapping("/{id}")
+    //GET http://localhost:8088/api/v1/orders/user/4
+    // lấy ra  chi tiết 1 order
+    public ResponseEntity<?> getOrder( @Valid @PathVariable("id") long  orderId){
+        try {
+            Order existingOrder = orderService.getOrder( orderId);
+            return ResponseEntity.ok(existingOrder);
+
+
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -51,7 +67,9 @@ public class OrderCotroller {
     public ResponseEntity<?> UpdateOrder( @Valid @PathVariable("id") long id,
                                          @Valid @RequestBody OrderDTO orderDTO){
         try {
-            return ResponseEntity.ok("cập nhât thành công ");
+            Order order = orderService.updateOrder(id, orderDTO);
+            return ResponseEntity.ok(order);
+
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -60,8 +78,11 @@ public class OrderCotroller {
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteOrder(@Valid @PathVariable Long id) {
+
         //xóa mềm => cập nhật trường active = false
-        return ResponseEntity.ok("xoá thành công ");
+        orderService.deleteOrder(id);
+        return ResponseEntity.ok("Order deleted successfully.");
+
     }
 
 
